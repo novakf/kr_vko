@@ -12,16 +12,16 @@ mkdir $temp_temp
 sleep 0.5
 
 # # запуск рлс
-./rls/run_rls.sh &
+./rls/run_rls.sh $>/dev/null&
 
 # запуск зрдн
-./zrdn/run_zrdn.sh  &
+./zrdn/run_zrdn.sh  $>/dev/null &
 
 # запуск  спро
-./spro/spro.sh &
+./spro/spro.sh $>/dev/null &
 
 # запуск КП
-./kp.sh &
+./kp.sh $>/dev/null &
 
 
 # завершение дочерних процессов

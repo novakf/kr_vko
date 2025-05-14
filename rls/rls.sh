@@ -3,11 +3,10 @@
 config_file=$1
 rls_num=$2
 file_log=$3
-message_rls=$4
+log_rls=$4
+message_rls=$5
 delim=":"
 targets_dir="/tmp/GenTargets/Targets/"
-
-
 
 if [ -f "$config_file" ]; then
     x0=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'x0:' | awk '{print $2}')
@@ -20,9 +19,19 @@ else
     exit 1
 fi
 
+sendMessage() {
+	local content="$1"
+	local file_path="${message_rls}"
 
+	# Создаём контрольную сумму SHA-256
+	local checksum=$(echo -n "$content" | sha256sum | cut -d' ' -f1)
+	# Шифрование base64
+	local encrypted_content=$(echo -n "$content" | base64 -w 0)
 
-function InRlsZone()
+	echo "$checksum $encrypted_content" >> "$file_path"
+}
+
+function inRlsZone()
 {
     local dx=$1
     local dy=$2
@@ -56,7 +65,7 @@ function InRlsZone()
 }
 
 
-function Speedometer()
+function calculatedSpeed()
 {
     local v=$1
     res=$(echo "$v>=8000  && $v<=10000 "| bc -l)
@@ -67,7 +76,7 @@ function Speedometer()
     return 0
 }
 
-function ToSproDirection()
+function sproDirection()
 {
     local vx=$1
     local vy=$2
@@ -75,7 +84,9 @@ function ToSproDirection()
     local dy=$4
     local R=$5
 
+    # расстояние цели до спро
     local r=$(echo "sqrt ( (($dx*$dx+$dy*$dy)) )" | bc -l)
+    # расстояние между засечками
     local v=$(echo "sqrt ( (($vx*$vx+$vy*$vy)) )" | bc -l)
 
     cos=$(echo "($vx*$dx + $vy*$dy) / ($r * $v)" | bc -l)
@@ -88,7 +99,7 @@ function ToSproDirection()
     return 0
 }
 
-function decode_target_id() {
+function decodeTargetId() {
 	local filename=$1
 	local decoded_hex=""
 	for ((i = 2; i <= ${#filename}; i += 4)); do
@@ -105,13 +116,17 @@ do
         coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
         x=${coords% *}
         y=${coords#* }
-        id=$(decode_target_id "$file")
+        id=$(decodeTargetId "$file")
         let dx=$x0-$x
         let dy=$y0-$y
+        if [ -z "$id" ]
+		    then
+			    continue
+		    fi
 
         
         # проверка наличия цели в области видимости рлс
-        InRlsZone $dx $dy $r $az $ph
+        inRlsZone $dx $dy $r $az $ph
         targetInZone=$?
 
         if [[ $targetInZone -eq 1 ]]
@@ -122,7 +137,7 @@ do
 
             if [[ $num == 0 ]]
             then
-                # echo "Обнаружена цель ID: $id" >> $message_rls
+                # echo "Обнаружена цель ID: $id" >> $log_rls
                 echo "$id $x $y rls: $rls_num" >> $file_log
 
             else
@@ -130,32 +145,33 @@ do
                 y1=$(echo "$str" | awk '{print $3}')
                 let vx=x-x1
                 let vy=y-y1
-                v=$(echo "sqrt ( (($vx*$vx+$vy*$vy)) )" | bc -l)
+                v=$(printf %.2f $(echo "sqrt ( (($vx*$vx+$vy*$vy)) )" | bc -l))
 
                 # проверка, что цель - БР
-                Speedometer $v
-                SpeedometerResult=$?
-                if [[ $SpeedometerResult -eq 1 ]]
+                calculatedSpeed $v
+                speedResult=$?
+                if [[ $speedResult -eq 1 ]]
                 then
                     let dx=$x0-$x1
                     let dy=$y0-$y1
 
                     # проверка, что цель летит в сторону спро
-                    ToSproDirection $vx $vy $dx $dy $r
-                    ToSproDirectionResult=$?
-                    if [[ $ToSproDirectionResult -eq 1 ]]
+                    sproDirection $vx $vy $dx $dy $r
+                    sproDirectionResult=$?
+                    if [[ $sproDirectionResult -eq 1 ]]
                     then
                         # проверка что БР, летящая к спро обнаружена
-                        check=$(cat $message_rls | grep "$id")
+                        check=$(cat $log_rls | grep "$id")
                         if [ -z "$check" ]
                         then
-                            echo "`date -u` $rls_num $id $x $y: БР движется в направлении СПРО" >> $message_rls
+                            echo "`date` [$rls_num] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)" >> $log_rls
+                            sendMessage "`date` [$rls_num] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)"
                         fi
                     else
-                        check=$(cat $message_rls | grep "$id")
+                        check=$(cat $log_rls | grep "$id")
                         if [ -z "$check" ]
                         then
-                            echo "`date -u` $rls_num $id $x $y: обнаружена БР" >> $message_rls
+                            echo "`date` [$rls_num] ID:$id X:$x Y:$y Обнаружена БР (V=$v)" >> $log_rls
                         fi
                     fi
                 fi

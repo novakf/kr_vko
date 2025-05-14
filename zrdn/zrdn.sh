@@ -3,12 +3,15 @@
 config_file=$1
 zrdn_num=$2
 file_log=$3
-message_zrdn=$4
+log_zrdn=$4
 temp_file=$5
+message_zrdn=$6
 delim=":"
 ammo=20
 targets_dir="/tmp/GenTargets/Targets/"
 destroy_dir="/tmp/GenTargets/Destroy/"
+ammo_file="zrdn/ammo_$zrdn_num"
+echo $ammo > $ammo_file
 
 
 if [ -f "$config_file" ]; then
@@ -21,7 +24,20 @@ else
 	exit 1
 fi
 
-function InZrdnZone()
+sendMessage() {
+	local content="$1"
+
+	local file_path="${message_zrdn}"
+
+	# Создаём контрольную сумму SHA-256
+	local checksum=$(echo -n "$content" | sha256sum | cut -d' ' -f1)
+	# Шифрование base64
+	local encrypted_content=$(echo -n "$content" | base64 -w 0)
+
+	echo "$checksum $encrypted_content" >> "$file_path"
+}
+
+function inZrdnZone()
 {
 	local dx=$1
 	local dy=$2
@@ -38,13 +54,13 @@ function InZrdnZone()
 }
 
 
-function decode_target_id() {
+function decodeTargetId() {
 	local filename=$1
-	local decoded_hex=""
+	local decodedHex=""
 	for ((i = 2; i <= ${#filename}; i += 4)); do
-		decoded_hex+="${filename:$i:2}"
+		decodedHex+="${filename:$i:2}"
 	done
-	echo -n "$decoded_hex" | xxd -r -p
+	echo -n "$decodedHex" | xxd -r -p
 }
 
 
@@ -55,13 +71,15 @@ do
 	# считывание из директория gentargets
 	files=`ls $targets_dir -t 2>/dev/null | head -30`
 	targets=""
+  ammo=$(< "$ammo_file")
 
 	# создание строки с id
 	for file in $files
 	do
-    curr_id=$(decode_target_id "$file")
-		targets="$targets ${id}"
+    curr_id=$(decodeTargetId "$file")
+		targets="$targets ${curr_id}"
 	done
+
 	# проверка, что цели из файла есть в директории gentargets
 	for temp_target in $temp_targets
 	do
@@ -71,14 +89,16 @@ do
 		then
 			if [[ $type  == "Самолет" ]]
 			then
-				if [[ `cat $message_zrdn | grep -c $id` == 0 ]]
+				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date -u` $zrdn_num $id $x $y: Самолет поражен" >> $message_zrdn
+					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y: Самолет поражен" >> $log_zrdn
+          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y: Самолет поражен"
 				fi
 			else
-				if [[ `cat $message_zrdn | grep -c $id` == 0 ]]
+				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date -u` $zrdn_num $id $x $y: К.ракета поражена" >> $message_zrdn
+					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y: К.ракета поражена" >> $log_zrdn
+          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y: К.ракета поражена"
 				fi
 			fi
 		fi
@@ -91,13 +111,17 @@ do
     coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
     x=${coords% *}
     y=${coords#* }
-		id=$(decode_target_id "$file")
+		id=$(decodeTargetId "$file")
+		if [ -z "$id" ]
+		then
+			continue
+		fi
 		let dx=$x-$x0
 		let dy=$y-$y0
 
 		# проверка наличия цели в области зрдн
 		targetInZone=0
-		InZrdnZone $dx $dy $r
+		inZrdnZone $dx $dy $r
 		targetInZone=$?
 
 		if [[ $targetInZone -eq 1 ]]
@@ -107,8 +131,9 @@ do
 			num=$(tail -n 30 $file_log | grep -c $id)
 			if [[ $num == 0 ]]
 			then
-				# echo "Обнаружена цель ID: $id" >> $message_zrdn
+				echo "`date` [$zrdn_num] ID:$id Обнаружена цель" >> $log_zrdn
 				echo "$id $x $y zrdn: $zrdn_num" >> $file_log
+        sendMessage "`date` [$zrdn_num] ID:$id Обнаружена цель"
 			else
 				x1=$(echo "$str" | awk '{print $2}')
 				y1=$(echo "$str" | awk '{print $3}')
@@ -126,10 +151,12 @@ do
 					if [[ $ammo -gt 0 ]]
 					then
 						let ammo=ammo-1
-						echo "" > "$destroy_dir$id"
+            echo $ammo > "$ammo_file"
+						echo "$zrdn_num" > "$destroy_dir$id"
 						echo "$id:К.ракета" >> $temp_file
 					else
-						echo "Противоракеты закончились" >> $message_zrdn
+						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
+            sendMessage "$zrdn_num: Противоракеты закончились"
 					fi 
 				# проверка на самолет
 				elif [ $plane -eq 1 ]; then
@@ -137,15 +164,16 @@ do
 					if [[ $ammo -gt 0 ]]
 					then
 						let ammo=ammo-1
-						echo "" > "$destroy_dir$id"
+            echo $ammo > "$ammo_file"
+						echo "$zrdn_num" > "$destroy_dir$id"
 						echo "$id:Самолет" >> $temp_file
 					else
-						echo "$zrdn_num: Противоракеты закончились" >> $message_zrdn
+						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
+            sendMessage "$zrdn_num: Противоракеты закончились"
 					fi 
 				fi
 			fi
 		fi
 	done
-
-	sleep 0.5
+  sleep 0.5
 done
