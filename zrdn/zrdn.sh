@@ -106,7 +106,7 @@ do
       sendMessage "`date` [$zrdn_num] ID:$temp_target Промах"
 		fi
 	done
-	#echo "" > $temp_file
+	echo "" > $temp_file
 	
 	for file in `ls $targets_dir -t 2>/dev/null | head -30`
 	do
@@ -182,7 +182,7 @@ do
 			fi
 		fi
 	done
-  #sleep 1
+  sleep 1
 done
 
 # завершение дочерних процессов

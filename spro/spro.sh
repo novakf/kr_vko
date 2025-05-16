@@ -114,7 +114,7 @@ do
       sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y Промах"
 		fi
 	done
-	#echo "" > $temp_file
+	echo "" > $temp_file
 
 	for file in $files
 	do
@@ -180,5 +180,5 @@ do
 		fi
 	done
 
-  sleep 0.5
+  sleep 1
 done
