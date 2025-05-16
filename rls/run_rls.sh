@@ -4,28 +4,25 @@ rls1="RLS1"
 rls2="RLS2"
 rls3="RLS3"
 
-file_to_run="./rls/rls.sh"
-config_file="rls/config.yaml"
+FILE_TO_RUN="./rls/rls.sh"
+CONFIG_FILE="rls/config.yaml"
 
-detected_targets="tmp/detected_targets/rls"
-message_rls="messages/message_rls"
-log_file="logs/rls"
-echo "" > $log_file
-echo "" > $detected_targets
-echo "" > $message_rls
-
-bad_num_proc=0
-check_systems_time=10
+DETECTED_TARGETS_FILE="tmp/detected_targets/rls"
+MESSAGE_RLS="messages/message_rls"
+LOG_FILE="logs/rls"
+echo "" > $LOG_FILE
+echo "" > $DETECTED_TARGETS_FILE
+echo "" > $MESSAGE_RLS
 
 # запуск рлс
-$file_to_run $config_file $rls1 $detected_targets $log_file $message_rls &
-$file_to_run $config_file $rls2 $detected_targets $log_file $message_rls &
-$file_to_run $config_file $rls3 $detected_targets $log_file $message_rls &
+$FILE_TO_RUN $CONFIG_FILE $rls1 $DETECTED_TARGETS_FILE $LOG_FILE $MESSAGE_RLS &
+$FILE_TO_RUN $CONFIG_FILE $rls2 $DETECTED_TARGETS_FILE $LOG_FILE $MESSAGE_RLS &
+$FILE_TO_RUN $CONFIG_FILE $rls3 $DETECTED_TARGETS_FILE $LOG_FILE $MESSAGE_RLS &
 
 # завершение дочерних процессов
-parent_pid=$$
+parentPid=$$
 cleanup() {
-pkill -P $parent_pid
+pkill -P $parentPid
 }
 trap cleanup EXIT
 wait

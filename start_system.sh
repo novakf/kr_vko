@@ -1,11 +1,11 @@
 #!/bin/bash
 
-shooted_targets="tmp/shooted_targets"
-detected_targets="tmp/detected_targets_targets"
-rm -rf $shooted_targets 2>/dev/null
-rm -rf $detected_targets 2>/dev/null
-mkdir $shooted_targets
-mkdir $detected_targets
+SHOOTED_TARGETS_DIR="tmp/shooted_targets"
+DETECTED_TARGETS_DIR="tmp/detected_targets"
+rm -rf $SHOOTED_TARGETS_DIR 2>/dev/null
+rm -rf $DETECTED_TARGETS_DIR 2>/dev/null
+mkdir $SHOOTED_TARGETS_DIR
+mkdir $DETECTED_TARGETS_DIR
 
 # запуск генератора целей
 ./GenTargets.sh &
@@ -25,9 +25,9 @@ sleep 0.5
 
 
 # завершение дочерних процессов
-parent_pid=$$
+parentPid=$$
 cleanup() {
-  pkill -P $parent_pid
+  pkill -P $parentPid
 }
 trap cleanup EXIT
 wait

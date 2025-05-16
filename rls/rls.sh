@@ -1,34 +1,33 @@
 #!/bin/bash
 
-config_file=$1
-rls_num=$2
-detected_targets_file=$3
-log_rls=$4
-message_rls=$5
-delim=":"
-targets_dir="/tmp/GenTargets/Targets/"
+CONFIG_FILE=$1
+RLS_NUM=$2
+DETECTED_TARGETS_FILE=$3
+LOG_RLS=$4
+MESSAGE_RLS=$5
+DELIM=":"
+TARGETS_DIR="/tmp/GenTargets/Targets/"
 
-if [ -f "$config_file" ]; then
-    x0=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'x0:' | awk '{print $2}')
-    y0=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'y0:' | awk '{print $2}')
-    az=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'az:' | awk '{print $2}')
-    ph=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'ph:' | awk '{print $2}')
-    r=$(grep -E "$rls_num$delim" "$config_file" -A 5 | grep 'r:' | awk '{print $2}')
+if [ -f "$CONFIG_FILE" ]; then
+    x0=$(grep -E "$RLS_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'x0:' | awk '{print $2}')
+    y0=$(grep -E "$RLS_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'y0:' | awk '{print $2}')
+    az=$(grep -E "$RLS_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'az:' | awk '{print $2}')
+    ph=$(grep -E "$RLS_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'ph:' | awk '{print $2}')
+    r=$(grep -E "$RLS_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
 else
-    echo "Файл $config_file не найден."
+    echo "Файл $CONFIG_FILE не найден."
     exit 1
 fi
 
 sendMessage() {
 	local content="$1"
-	local file_path="${message_rls}"
 
 	# Создаём контрольную сумму SHA-256
 	local checksum=$(echo -n "$content" | sha256sum | cut -d' ' -f1)
 	# Шифрование base64
-	local encrypted_content=$(echo -n "$content" | base64 -w 0)
+	local encryptedContent=$(echo -n "$content" | base64 -w 0)
 
-	echo "$checksum $encrypted_content" >> "$file_path"
+	echo "$checksum $encryptedContent" >> "$MESSAGE_RLS"
 }
 
 function inRlsZone()
@@ -46,17 +45,17 @@ function inRlsZone()
     then
         local phi=$(echo | awk " { x=atan2($dy,$dx)*180/3.14; print x}")
         phi=(${phi/\,*})
-        check_phi=$(echo "$phi < 0"| bc)
-        if [[ "$check_phi" -eq 1 ]]
+        checkPhi=$(echo "$phi < 0"| bc)
+        if [[ "$checkPhi" -eq 1 ]]
         then
             phi=$(echo "360 + $phi" | bc)
         fi
         let phiMax=$AZ+PH/2
         let phiMin=$AZ-PH/2
 
-        check_phiMax=$(echo "$phi <= $phiMax"| bc)
-        check_phiMin=$(echo "$phi >= $phiMin"| bc)
-        if (( $check_phiMax == 1 )) && (( $check_phiMin == 1 ))
+        checkPhiMax=$(echo "$phi <= $phiMax"| bc)
+        checkPhiMin=$(echo "$phi >= $phiMin"| bc)
+        if (( $checkPhiMax == 1 )) && (( $checkPhiMin == 1 ))
         then
             return 1
         fi
@@ -101,18 +100,18 @@ function sproDirection()
 
 function decodeTargetId() {
 	local filename=$1
-	local decoded_hex=""
+	local decodedHex=""
 	for ((i = 2; i <= ${#filename}; i += 4)); do
-		decoded_hex+="${filename:$i:2}"
+		decodedHex+="${filename:$i:2}"
 	done
-	echo -n "$decoded_hex" | xxd -r -p
+	echo -n "$decodedHex" | xxd -r -p
 }
 
 while :
 do
-    for file in `ls $targets_dir -t 2>/dev/null | head -30`
+    for file in `ls $TARGETS_DIR -t 2>/dev/null | head -30`
     do
-        fileContent=$(cat "$targets_dir$file")
+        fileContent=$(cat "$TARGETS_DIR$file")
         coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
         x=${coords% *}
         y=${coords#* }
@@ -132,13 +131,13 @@ do
         if [[ $targetInZone -eq 1 ]]
         then
             # проверка наличия в файле этой цели
-            str=$(tail -n 30 $detected_targets_file | grep $id | tail -n 1)
-            num=$(tail -n 30 $detected_targets_file | grep -c $id)
+            str=$(tail -n 30 $DETECTED_TARGETS_FILE | grep $id | tail -n 1)
+            num=$(tail -n 30 $DETECTED_TARGETS_FILE | grep -c $id)
 
             if [[ $num == 0 ]]
             then
-                # echo "Обнаружена цель ID: $id" >> $log_rls
-                echo "$id $x $y rls: $rls_num" >> $detected_targets_file
+                # echo "Обнаружена цель ID: $id" >> $LOG_RLS
+                echo "$id $x $y rls: $RLS_NUM" >> $DETECTED_TARGETS_FILE
 
             else
                 x1=$(echo "$str" | awk '{print $2}')
@@ -161,18 +160,18 @@ do
                     if [[ $sproDirectionResult -eq 1 ]]
                     then
                         # проверка что БР, летящая к спро обнаружена
-                        check=$(cat $log_rls | grep "$id")
+                        check=$(cat $LOG_RLS | grep "$id")
                         if [ -z "$check" ]
                         then
-                            echo "`date` [$rls_num] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)" >> $log_rls
-                            sendMessage "`date` [$rls_num] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)"
+                            echo "`date` [$RLS_NUM] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)" >> $LOG_RLS
+                            sendMessage "`date` [$RLS_NUM] ID:$id X:$x Y:$y БР движется в направлении СПРО (V=$v)"
                         fi
                     else
-                        check=$(cat $log_rls | grep "$id")
+                        check=$(cat $LOG_RLS | grep "$id")
                         if [ -z "$check" ]
                         then
-                            echo "`date` [$rls_num] ID:$id X:$x Y:$y Обнаружена БР (V=$v)" >> $log_rls
-                            sendMessage "`date` [$rls_num] ID:$id X:$x Y:$y Обнаружена БР (V=$v)"
+                            echo "`date` [$RLS_NUM] ID:$id X:$x Y:$y Обнаружена БР (V=$v)" >> $LOG_RLS
+                            sendMessage "`date` [$RLS_NUM] ID:$id X:$x Y:$y Обнаружена БР (V=$v)"
                         fi
                     fi
                 fi

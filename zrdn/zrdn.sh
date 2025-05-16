@@ -1,40 +1,38 @@
 #!/bin/bash
 
-config_file=$1
-zrdn_num=$2
-detected_targets=$3
-log_zrdn=$4
-shooted_targets_file=$5
-message_zrdn=$6
-delim=":"
+CONFIG_FILE=$1
+ZRDN_NUM=$2
+DETECTED_TARGETS=$3
+LOG_ZRDN=$4
+SHOOTED_TARGETS_FILE=$5
+MESSAGE_ZRDN=$6
+DELIM=":"
 ammo=20
-targets_dir="/tmp/GenTargets/Targets/"
-destroy_dir="/tmp/GenTargets/Destroy/"
-ammo_file="zrdn/ammo_$zrdn_num"
-echo $ammo > $ammo_file
+TARGETS_DIR="/tmp/GenTargets/Targets/"
+DESTROY_DIR="/tmp/GenTargets/Destroy/"
+AMMO_FILE="zrdn/ammo_$ZRDN_NUM"
+echo $ammo > $AMMO_FILE
 
 
-if [ -f "$config_file" ]; then
-	x0=$(grep -E "$zrdn_num$delim" "$config_file" -A 5 | grep 'x0:' | awk '{print $2}')
-	y0=$(grep -E "$zrdn_num$delim" "$config_file" -A 5 | grep 'y0:' | awk '{print $2}')
-	r=$(grep -E "$zrdn_num$delim" "$config_file" -A 5 | grep 'r:' | awk '{print $2}')
+if [ -f "$CONFIG_FILE" ]; then
+	x0=$(grep -E "$ZRDN_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'x0:' | awk '{print $2}')
+	y0=$(grep -E "$ZRDN_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'y0:' | awk '{print $2}')
+	r=$(grep -E "$ZRDN_NUM$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
 
 else
-	echo "Файл $config_file не найден."
+	echo "Файл $CONFIG_FILE не найден."
 	exit 1
 fi
 
 sendMessage() {
 	local content="$1"
 
-	local file_path="${message_zrdn}"
-
 	# Создаём контрольную сумму SHA-256
 	local checksum=$(echo -n "$content" | sha256sum | cut -d' ' -f1)
 	# Шифрование base64
-	local encrypted_content=$(echo -n "$content" | base64 -w 0)
+	local encryptedContent=$(echo -n "$content" | base64 -w 0)
 
-	echo "$checksum $encrypted_content" >> "messages/message_zrdn"
+	echo "$checksum $encryptedContent" >> "messages/message_zrdn"
 }
 
 function inZrdnZone()
@@ -67,50 +65,50 @@ function decodeTargetId() {
 while :
 do
 	# считывание из временного файла
-	shooted_targets=`cat $shooted_targets_file`
+	shootedTargets=`cat $SHOOTED_TARGETS_FILE`
 	# считывание из директория gentargets
-	files=`ls $targets_dir -t 2>/dev/null | head -30`
+	files=`ls $TARGETS_DIR -t 2>/dev/null | head -30`
 	targets=""
-  ammo=$(< "$ammo_file")
+  ammo=$(< "$AMMO_FILE")
 
 	# создание строки с id
 	for file in $files
 	do
-    curr_id=$(decodeTargetId "$file")
-		targets="$targets ${curr_id}"
+    currId=$(decodeTargetId "$file")
+		targets="$targets ${currId}"
 	done
 
 	# проверка, что цели из файла есть в директории gentargets
-	for shooted_target in $shooted_targets
+	for shootedTarget in $shootedTargets
 	do
-		id=$(echo $shooted_target | awk -F ":" '{print $1}')
-		type=$(echo $shooted_target | awk -F ":" '{print $2}')
+		id=$(echo $shootedTarget | awk -F ":" '{print $1}')
+		type=$(echo $shootedTarget | awk -F ":" '{print $2}')
 		if [[ $targets != *"$id"* ]]
 		then
 			if [[ $type  == "Самолет" ]]
 			then
-				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
+				if [[ `cat $LOG_ZRDN | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y Самолет поражен" >> $log_zrdn
-          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y Самолет поражен"
+					echo "`date` [$ZRDN_NUM] ID:$id X:$x Y:$y Самолет поражен" >> $LOG_ZRDN
+          sendMessage "`date` [$ZRDN_NUM] ID:$id X:$x Y:$y Самолет поражен"
 				fi
 			else
-				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
+				if [[ `cat $LOG_ZRDN | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y К.ракета поражена" >> $log_zrdn
-          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y К.ракета поражена"
+					echo "`date` [$ZRDN_NUM] ID:$id X:$x Y:$y К.ракета поражена" >> $LOG_ZRDN
+          sendMessage "`date` [$ZRDN_NUM] ID:$id X:$x Y:$y К.ракета поражена"
 				fi
 			fi
     else
-      echo "`date` [$zrdn_num] ID:$shooted_target Промах" >> $log_zrdn
-      sendMessage "`date` [$zrdn_num] ID:$shooted_target Промах"
+      echo "`date` [$ZRDN_NUM] ID:$shootedTarget Промах" >> $LOG_ZRDN
+      sendMessage "`date` [$ZRDN_NUM] ID:$shootedTarget Промах"
 		fi
 	done
-	echo "" > $shooted_targets_file
+	echo "" > $SHOOTED_TARGETS_FILE
 	
-	for file in `ls $targets_dir -t 2>/dev/null | head -30`
+	for file in `ls $TARGETS_DIR -t 2>/dev/null | head -30`
 	do
-		fileContent=$(cat "$targets_dir$file")
+		fileContent=$(cat "$TARGETS_DIR$file")
     coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
     x=${coords% *}
     y=${coords#* }
@@ -130,13 +128,13 @@ do
 		if [[ $targetInZone -eq 1 ]]
 		then
 			# проверка наличия в файле этой цели
-			str=$(tail -n 30 $detected_targets | grep $id | tail -n 1)
-			num=$(tail -n 30 $detected_targets | grep -c $id)
+			str=$(tail -n 30 $DETECTED_TARGETS | grep $id | tail -n 1)
+			num=$(tail -n 30 $DETECTED_TARGETS | grep -c $id)
 			if [[ $num == 0 ]]
 			then
-				echo "`date` [$zrdn_num] ID:$id Обнаружена цель" >> $log_zrdn
-				echo "$id $x $y zrdn: $zrdn_num" >> $detected_targets
-        sendMessage "`date` [$zrdn_num] ID:$id Обнаружена цель"
+				echo "`date` [$ZRDN_NUM] ID:$id Обнаружена цель" >> $LOG_ZRDN
+				echo "$id $x $y zrdn: $ZRDN_NUM" >> $DETECTED_TARGETS
+        sendMessage "`date` [$ZRDN_NUM] ID:$id Обнаружена цель"
 			else
 				x1=$(echo "$str" | awk '{print $2}')
 				y1=$(echo "$str" | awk '{print $3}')
@@ -154,12 +152,12 @@ do
 					if [[ $ammo -gt 0 ]]
 					then
 						let ammo=ammo-1
-            echo $ammo > "$ammo_file"
-						echo "$zrdn_num" > "$destroy_dir$id"
-						echo "$id:К.ракета" >> $shooted_targets_file
+            echo $ammo > "$AMMO_FILE"
+						echo "$ZRDN_NUM" > "$DESTROY_DIR$id"
+						echo "$id:К.ракета" >> $SHOOTED_TARGETS_FILE
 					else
-						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
-            sendMessage "$zrdn_num: Противоракеты закончились"
+						echo "$ZRDN_NUM: Противоракеты закончились" >> $LOG_ZRDN
+            sendMessage "$ZRDN_NUM: Противоракеты закончились"
 					fi 
 				# проверка на самолет
 				elif [ $plane -eq 1 ]; then
@@ -167,16 +165,16 @@ do
 					if [[ $ammo -gt 0 ]]
 					then
 						let ammo=ammo-1
-            echo $ammo > "$ammo_file"
-						echo "$zrdn_num" > "$destroy_dir$id"
-						echo "$id:Самолет" >> $shooted_targets_file
+            echo $ammo > "$AMMO_FILE"
+						echo "$ZRDN_NUM" > "$DESTROY_DIR$id"
+						echo "$id:Самолет" >> $SHOOTED_TARGETS_FILE
 
-            echo "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)" >> $log_zrdn
-            sendMessage "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)"
+            echo "`date` [$ZRDN_NUM] ID:$id Выстрел (осталось $ammo)" >> $LOG_ZRDN
+            sendMessage "`date` [$ZRDN_NUM] ID:$id Выстрел (осталось $ammo)"
 
 					else
-						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
-            sendMessage "$zrdn_num: Противоракеты закончились"
+						echo "$ZRDN_NUM: Противоракеты закончились" >> $LOG_ZRDN
+            sendMessage "$ZRDN_NUM: Противоракеты закончились"
 					fi 
 				fi
 			fi
@@ -186,9 +184,9 @@ do
 done
 
 # завершение дочерних процессов
-parent_pid=$$
+parentPid=$$
 cleanup() {
-  pkill -P $parent_pid
+  pkill -P $parentPid
 }
 trap cleanup EXIT
 wait

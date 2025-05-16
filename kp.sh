@@ -1,45 +1,44 @@
 #!/bin/bash
 
-rls_messages="messages/message_rls"
-spro_messages="messages/message_spro"
-zrdn_messages="messages/message_zrdn"
-kp_logs="logs/kp_logs"
-rls_logs="logs/rls"
-spro_logs="logs/spro"
-zrdn_logs="logs/zrdn"
+RLS_MESSAGES="messages/message_rls"
+SPRO_MESSAGES="messages/message_spro"
+ZRDN_MESSAGES="messages/message_zrdn"
+KP_LOGS="logs/kp_logs"
+RLS_LOGS="logs/rls"
+SPRO_LOGS="logs/spro"
+ZRDN_LOGS="logs/zrdn"
 
-shooted_targets_zrdn1="tmp/shooted_targets/zrdn1"
-shooted_targets_zrdn2="tmp/shooted_targets/zrdn2"
-shooted_targets_zrdn3="tmp/shooted_targets/zrdn3"
+SHOOTED_TARGETS_ZRDN1="tmp/shooted_targets/zrdn1"
+SHOOTED_TARGETS_ZRDN2="tmp/shooted_targets/zrdn2"
+SHOOTED_TARGETS_ZRDN3="tmp/shooted_targets/zrdn3"
 
-file_to_run_zrdn="./zrdn/zrdn.sh"
-config_file_zrdn="zrdn/config.yaml"
-file_to_run_rls="./rls/rls.sh"
-config_file_rls="rls/config.yaml"
+FILE_TO_RUN_ZRDN="./zrdn/zrdn.sh"
+CONFIG_FILE_ZRDN="zrdn/config.yaml"
+FILE_TO_RUN_RLS="./rls/rls.sh"
+CONFIG_FILE_RLS="rls/config.yaml"
 
-detected_targets_zrdn="tmp/detected_targes/zrdn_logs"
-detected_targets_rls="tmp/detected_targes/rls_logs"
+DETECTED_TARGETS_ZRDN="tmp/detected_targes/zrdn_logs"
+DETECTED_TARGETS_RLS="tmp/detected_targes/rls_logs"
 
-spro_ammo_file="spro/ammo"
-zrdn1_ammo_file="zrdn/ammo_ZRDN1"
-zrdn2_ammo_file="zrdn/ammo_ZRDN2"
-zrdn3_ammo_file="zrdn/ammo_ZRDN3"
+SPRO_AMMO_FILE="spro/ammo"
+ZRDN1_AMMO_FILE="zrdn/ammo_ZRDN1"
+ZRDN2_AMMO_FILE="zrdn/ammo_ZRDN2"
+ZRDN3_AMMO_FILE="zrdn/ammo_ZRDN3"
 
 
-echo "" > $kp_logs
-echo "" > $rls_logs
-echo "" > $spro_logs
-echo "" > $zrdn_logs
-echo "" > $rls_messages
-echo "" > $zrdn_messages
-echo "" > $spro_messages
+echo "" > $KP_LOGS
+echo "" > $RLS_LOGS
+echo "" > $SPRO_LOGS
+echo "" > $ZRDN_LOGS
+echo "" > $RLS_MESSAGES
+echo "" > $ZRDN_MESSAGES
+echo "" > $SPRO_MESSAGES
 
-bad_num_proc=0
-check_systems_time=10
+BAD_NUM_PROC=0
 
 DB_FILE="db/vko.db"
 
-# Удаляем существующую базу данных (если нужно)
+# Удаляем существующую базу данных
 rm -f "$DB_FILE"
 
 # Создаем таблицу
@@ -55,19 +54,19 @@ EOF
 
 
 decryptMessage() {
-	local file_content=$1
+	local fileContent=$1
 
-	local saved_checksum=$(echo "$file_content" | head -n1 | cut -d' ' -f1)
-	local encrypted_content=$(echo "$file_content" | cut -d' ' -f2-)
+	local savedChecksum=$(echo "$fileContent" | head -n1 | cut -d' ' -f1)
+	local encryptedContent=$(echo "$fileContent" | cut -d' ' -f2-)
 
-	local decrypted_content=$(echo -n "$encrypted_content" | base64 -d)
+	local decryptedContent=$(echo -n "$encryptedContent" | base64 -d)
 
-	local calculated_checksum=$(echo -n "$decrypted_content" | sha256sum | cut -d' ' -f1)
+	local calculatedChecksum=$(echo -n "$decryptedContent" | sha256sum | cut -d' ' -f1)
 
-	if [ "$saved_checksum" = "$calculated_checksum" ]; then
-		echo "$decrypted_content"
+	if [ "$savedChecksum" = "$calculatedChecksum" ]; then
+		echo "$decryptedContent"
 	else
-		echo "`date` Ошибка контрольной суммы" >>"$kp_logs"
+		echo "`date` Ошибка контрольной суммы" >>"$KP_LOGS"
 		return 1
 	fi
 }
@@ -75,24 +74,24 @@ decryptMessage() {
 checkAmmo() {
 	while : 
   do
-    if grep -qw "0" $spro_ammo_file; then
-      echo "10" > $spro_ammo_file
-      echo "`date` [SPRO] Пополнение боеприпаса" >> "$kp_logs"
+    if grep -qw "0" $SPRO_AMMO_FILE; then
+      echo "10" > $SPRO_AMMO_FILE
+      echo "`date` [SPRO] Пополнение боеприпаса" >> "$KP_LOGS"
     fi
 
-    if grep -qw "0" $zrdn1_ammo_file; then
-      echo "20" > $zrdn1_ammo_file
-      echo "`date` [ZRDN1] Пополнение боеприпаса" >> "$kp_logs"
+    if grep -qw "0" $ZRDN1_AMMO_FILE; then
+      echo "20" > $ZRDN1_AMMO_FILE
+      echo "`date` [ZRDN1] Пополнение боеприпаса" >> "$KP_LOGS"
     fi
 
-    if grep -qw "0" $zrdn2_ammo_file; then
-      echo "20" > $zrdn2_ammo_file
-      echo "`date` [ZRDN2] Пополнение боеприпаса" >> "$kp_logs"
+    if grep -qw "0" $ZRDN2_AMMO_FILE; then
+      echo "20" > $ZRDN2_AMMO_FILE
+      echo "`date` [ZRDN2] Пополнение боеприпаса" >> "$KP_LOGS"
     fi
 
-    if grep -qw "0" $zrdn3_ammo_file; then
-      echo "20" > $zrdn3_ammo_file
-      echo "`date` [ZRDN3] Пополнение боеприпаса" >> "$kp_logs"
+    if grep -qw "0" $ZRDN3_AMMO_FILE; then
+      echo "20" > $ZRDN3_AMMO_FILE
+      echo "`date` [ZRDN3] Пополнение боеприпаса" >> "$KP_LOGS"
     fi
 
 	done
@@ -102,46 +101,46 @@ receiveMessages() {
   while :
   do
   	# сообщения рлс
-  	last_rls_data=`cat $rls_messages | tail -n 1`
-    if [ ${#last_rls_data} -gt 5 ]
+  	lastRlsData=`cat $RLS_MESSAGES | tail -n 1`
+    if [ ${#lastRlsData} -gt 5 ]
     then
-      decrypted_rls=$(decryptMessage "$last_rls_data")
-  	  if ! grep -F "$decrypted_rls" "$kp_logs" 
+      decryptedRls=$(decryptMessage "$lastRlsData")
+  	  if ! grep -F "$decryptedRls" "$KP_LOGS" 
   	  then
-  	  	echo "$decrypted_rls" >> "$kp_logs"
+  	  	echo "$decryptedRls" >> "$KP_LOGS"
 
-        time=$(echo "$decrypted_rls" | grep -oP '^.*?(?=\s*\[)')
-        sys=$(echo "$decrypted_rls" | grep -oP '(?<=\[).*?(?=\])')
-        id=$(echo "$decrypted_rls" | grep -oP '(?<=ID:)[0-9a-f]+')
-        x=$(echo "$decrypted_rls" | grep -oP '(?<=X:)[0-9]+')
-        y=$(echo "$decrypted_rls" | grep -oP '(?<=Y:)[0-9]+')
+        time=$(echo "$decryptedRls" | grep -oP '^.*?(?=\s*\[)')
+        sys=$(echo "$decryptedRls" | grep -oP '(?<=\[).*?(?=\])')
+        id=$(echo "$decryptedRls" | grep -oP '(?<=ID:)[0-9a-f]+')
+        x=$(echo "$decryptedRls" | grep -oP '(?<=X:)[0-9]+')
+        y=$(echo "$decryptedRls" | grep -oP '(?<=Y:)[0-9]+')
 
         sqlite3 "$DB_FILE" "INSERT OR IGNORE INTO targets (id, target_type, system, event, timestamp) VALUES ('$id', 'b', '$sys', 'Обнаружение', '$time');"
   	  fi
     fi
 
   	# сообщения спро
-  	last_spro_data=`cat $spro_messages | tail -n 1`
-    if [ ${#last_spro_data} -gt 5 ]
+  	lastSproData=`cat $SPRO_MESSAGES | tail -n 1`
+    if [ ${#lastSproData} -gt 5 ]
     then
-  	  decrypted_spro=$(decryptMessage "$last_spro_data")
-  	  if ! grep -F "$decrypted_spro" "$kp_logs" 
+  	  decryptedSpro=$(decryptMessage "$lastSproData")
+  	  if ! grep -F "$decryptedSpro" "$KP_LOGS" 
   	  then
-  	  	echo "$decrypted_spro" >> "$kp_logs"
+  	  	echo "$decryptedSpro" >> "$KP_LOGS"
 
-        time=$(echo "$decrypted_spro" | grep -oP '^.*?(?=\s*\[)')
-        sys=$(echo "$decrypted_spro" | grep -oP '(?<=\[).*?(?=\])')
-        id=$(echo "$decrypted_spro" | grep -oP '(?<=ID:)[0-9a-f]+')
-        x=$(echo "$decrypted_spro" | grep -oP '(?<=X:)[0-9]+')
-        y=$(echo "$decrypted_spro" | grep -oP '(?<=Y:)[0-9]+')
+        time=$(echo "$decryptedSpro" | grep -oP '^.*?(?=\s*\[)')
+        sys=$(echo "$decryptedSpro" | grep -oP '(?<=\[).*?(?=\])')
+        id=$(echo "$decryptedSpro" | grep -oP '(?<=ID:)[0-9a-f]+')
+        x=$(echo "$decryptedSpro" | grep -oP '(?<=X:)[0-9]+')
+        y=$(echo "$decryptedSpro" | grep -oP '(?<=Y:)[0-9]+')
 
         event='Обнаружение'
 
-        if [[ "$decrypted_spro" == *"Выстрел"* ]]; then
+        if [[ "$decryptedSpro" == *"Выстрел"* ]]; then
           event='Выстрел'
-        elif [[ "$decrypted_spro" == *"Промах"* ]]; then
+        elif [[ "$decryptedSpro" == *"Промах"* ]]; then
           event='Промах'
-        elif [[ "$decrypted_spro" == *"поражен"* ]]; then
+        elif [[ "$decryptedSpro" == *"поражен"* ]]; then
           event='Поражен'
         fi
 
@@ -152,32 +151,32 @@ receiveMessages() {
 
 
   	# сообщения зрдн
-  	last_zrdn_data=`cat $zrdn_messages | tail -n 1`
-    if [ ${#last_zrdn_data} -gt 5 ]
+  	lastZrdnData=`cat $ZRDN_MESSAGES | tail -n 1`
+    if [ ${#lastZrdnData} -gt 5 ]
     then
-  	  decrypted_zrdn=$(decryptMessage "$last_zrdn_data")
-  	  if ! grep -F "$decrypted_zrdn" "$kp_logs" 
+  	  decryptedZrdn=$(decryptMessage "$lastZrdnData")
+  	  if ! grep -F "$decryptedZrdn" "$KP_LOGS" 
   	  then
-  	  	echo "$decrypted_zrdn" >> "$kp_logs"
+  	  	echo "$decryptedZrdn" >> "$KP_LOGS"
 
-        time=$(echo "$decrypted_zrdn" | grep -oP '^.*?(?=\s*\[)')
-        sys=$(echo "$decrypted_zrdn" | grep -oP '(?<=\[).*?(?=\])')
-        id=$(echo "$decrypted_zrdn" | grep -oP '(?<=ID:)[0-9a-f]+')
-        x=$(echo "$decrypted_zrdn" | grep -oP '(?<=X:)[0-9]+')
-        y=$(echo "$decrypted_zrdn" | grep -oP '(?<=Y:)[0-9]+')
+        time=$(echo "$decryptedZrdn" | grep -oP '^.*?(?=\s*\[)')
+        sys=$(echo "$decryptedZrdn" | grep -oP '(?<=\[).*?(?=\])')
+        id=$(echo "$decryptedZrdn" | grep -oP '(?<=ID:)[0-9a-f]+')
+        x=$(echo "$decryptedZrdn" | grep -oP '(?<=X:)[0-9]+')
+        y=$(echo "$decryptedZrdn" | grep -oP '(?<=Y:)[0-9]+')
 
         event='Обнаружение'
 
-        if [[ "$decrypted_zrdn" == *"Выстрел"* ]]; then
+        if [[ "$decryptedZrdn" == *"Выстрел"* ]]; then
           event='Выстрел'
-        elif [[ "$decrypted_zrdn" == *"Промах"* ]]; then
+        elif [[ "$decryptedZrdn" == *"Промах"* ]]; then
           event='Промах'
-        elif [[ "$decrypted_zrdn" == *"поражен"* ]]; then
+        elif [[ "$decryptedZrdn" == *"поражен"* ]]; then
           event='Поражен'
         fi
 
         type='s'
-        if [[ "$decrypted_zrdn" == *"ракета"* ]]; then
+        if [[ "$decryptedZrdn" == *"ракета"* ]]; then
           type='r'
         fi
 
@@ -191,43 +190,43 @@ autoFailover() {
   while :
   do
     ps=`ps -eo args`
-    ps_zrdn1=`echo $ps | grep -c "ZRDN1" | grep -v grep`
-    ps_zrdn2=`echo $ps | grep -c "ZRDN2" | grep -v grep`
-    ps_zrdn3=`echo $ps | grep -c "ZRDN3" | grep -v grep`
-    ps_rls1=`echo $ps | grep -c "RLS1" | grep -v grep`
-    ps_rls2=`echo $ps | grep -c "RLS2" | grep -v grep`
-    ps_rls3=`echo $ps | grep -c "RLS3" | grep -v grep`
+    psZrdn1=`echo $ps | grep -c "ZRDN1" | grep -v grep`
+    psZrdn2=`echo $ps | grep -c "ZRDN2" | grep -v grep`
+    psZrdn3=`echo $ps | grep -c "ZRDN3" | grep -v grep`
+    psRls1=`echo $ps | grep -c "RLS1" | grep -v grep`
+    psRls2=`echo $ps | grep -c "RLS2" | grep -v grep`
+    psRls3=`echo $ps | grep -c "RLS3" | grep -v grep`
 
-    if [[ $ps_zrdn1 == $bad_num_proc ]]
+    if [[ $psZrdn1 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [ZRDN1] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN1" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn1 $zrdn_messages &
+      echo "`date` [ZRDN1] Работоспособность восстановлена" >> $KP_LOGS
+      $FILE_TO_RUN_ZRDN $CONFIG_FILE_ZRDN "ZRDN1" $DETECTED_TARGETS_ZRDN $ZRDN_LOGS $SHOOTED_TARGETS_ZRDN1 $ZRDN_MESSAGES &
     fi
-    if [[ $ps_zrdn2 == $bad_num_proc ]]
+    if [[ $psZrdn2 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [ZRDN2] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN2" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn2 $zrdn_messages &
+      echo "`date` [ZRDN2] Работоспособность восстановлена" >> $KP_LOGS
+      $FILE_TO_RUN_ZRDN $CONFIG_FILE_ZRDN "ZRDN2" $DETECTED_TARGETS_ZRDN $ZRDN_LOGS $SHOOTED_TARGETS_ZRDN2 $ZRDN_MESSAGES &
     fi
-    if [[ $ps_zrdn3 == $bad_num_proc ]]
+    if [[ $psZrdn3 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [ZRDN3] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN3" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn3 $zrdn_messages &
+      echo "`date` [ZRDN3] Работоспособность восстановлена" >> $KP_LOGS
+      $FILE_TO_RUN_ZRDN $CONFIG_FILE_ZRDN "ZRDN3" $DETECTED_TARGETS_ZRDN $ZRDN_LOGS $SHOOTED_TARGETS_ZRDN3 $ZRDN_MESSAGES &
     fi
 
-    if [[ $ps_rls1 == $bad_num_proc ]]
+    if [[ $psRls1 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [RLS1] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_rls $config_file_rls 'RLS1' $detected_targets_rls $rls_logs $rls_messages &
+      echo "`date` [RLS1] Работоспособность восстановлена" >> $KP_LOGS
+      $FILE_TO_RUN_RLS $CONFIG_FILE_RLS 'RLS1' $DETECTED_TARGETS_RLS $RLS_LOGS $RLS_MESSAGES &
     fi
-    if [[ $ps_rls2 == $bad_num_proc ]]
+    if [[ $psRls2 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [RLS2] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_rls $config_file_rls 'RLS2' $detected_targets_rls $rls_logs $rls_messages &
+      echo "`date` [RLS2] Работоспособность восстановлена" >> $KP_LOGS
+      $FILE_TO_RUN_RLS $CONFIG_FILE_RLS 'RLS2' $DETECTED_TARGETS_RLS $RLS_LOGS $RLS_MESSAGES &
     fi
-    if [[ $ps_rls3 == $bad_num_proc ]]
+    if [[ $psRls3 == $BAD_NUM_PROC ]]
     then
-      echo "`date` [RLS3] Работоспособность восстановлена" >> $rls_logs
-      $file_to_run_rls $config_file_rls 'RLS3' $detected_targets_rls $rls_logs $rls_messages &
+      echo "`date` [RLS3] Работоспособность восстановлена" >> $RLS_LOGS
+      $FILE_TO_RUN_RLS $CONFIG_FILE_RLS 'RLS3' $DETECTED_TARGETS_RLS $RLS_LOGS $RLS_MESSAGES &
     fi
   done
 }
@@ -237,9 +236,9 @@ receiveMessages &
 autoFailover &
 
 # завершение дочерних процессов
-parent_pid=$$
+parentPid=$$
 cleanup() {
-  pkill -P $parent_pid
+  pkill -P $parentPid
 }
 trap cleanup EXIT
 wait

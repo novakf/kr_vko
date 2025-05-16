@@ -1,29 +1,29 @@
 #!/bin/bash
 
-config_file="spro/config.yaml"
-detected_targets="tmp/detected_targets/spro"
-message_spro="messages/message_spro"
-log_spro="logs/spro"
-targets_dir="/tmp/GenTargets/Targets/"
-destroy_dir="/tmp/GenTargets/Destroy/"
-shooted_targets_file="tmp/shooted_targets/spro"
-ammo_file="spro/ammo"
-delim=":"
+CONFIG_FILE="spro/config.yaml"
+DETECTED_TARGETS_FILE="tmp/detected_targets/spro"
+MESSAGE_SPRO="messages/message_spro"
+LOG_SPRO="logs/spro"
+TARGETS_DIR="/tmp/GenTargets/Targets/"
+DESTROY_DIR="/tmp/GenTargets/Destroy/"
+SHOOTED_TARGETS_FILE="tmp/shooted_targets/spro"
+AMMO_FILE="spro/ammo"
+DELIM=":"
 ammo=10
-echo "" > $detected_targets
-echo "" > $message_spro
-echo "" > $log_spro
-echo "" > $shooted_targets_file
-echo "$ammo" > $ammo_file
+echo "" > $DETECTED_TARGETS_FILE
+echo "" > $MESSAGE_SPRO
+echo "" > $LOG_SPRO
+echo "" > $SHOOTED_TARGETS_FILE
+echo "$ammo" > $AMMO_FILE
 
 
-if [ -f "$config_file" ]; then
-	x0=$(grep -E "SPRO$delim" "$config_file" -A 5 | grep 'x0:' | awk '{print $2}')
-	y0=$(grep -E "SPRO$delim" "$config_file" -A 5 | grep 'y0:' | awk '{print $2}')
-	r=$(grep -E "SPRO$delim" "$config_file" -A 5 | grep 'r:' | awk '{print $2}')
+if [ -f "$CONFIG_FILE" ]; then
+	x0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'x0:' | awk '{print $2}')
+	y0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'y0:' | awk '{print $2}')
+	r=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
 
 else
-	echo "Файл $config_file не найден."
+	echo "Файл $CONFIG_FILE не найден."
 	exit 1
 fi
 
@@ -83,43 +83,43 @@ sendMessage() {
 	# Шифрование base64
 	local encryptedContent=$(echo -n "$content" | base64 -w 0)
 
-	echo "$checksum $encryptedContent" >> "$message_spro"
+	echo "$checksum $encryptedContent" >> "$MESSAGE_SPRO"
 }
 
 while :
 do
 	# считывание из временного файла
-	shooted_targets=`cat $shooted_targets_file`
+	shootedTargets=`cat $SHOOTED_TARGETS_FILE`
 	# считывание из директорияя gentargets
-	files=`ls $targets_dir -t 2>/dev/null | head -30`
+	files=`ls $TARGETS_DIR -t 2>/dev/null | head -30`
 	targets=""
-  ammo=$(< "$ammo_file")
+  ammo=$(< "$AMMO_FILE")
 
 	# создание строки с id
 	for file in $files
 	do
-    curr_id=$(decodeTargetId "$file")
-		targets="$targets ${curr_id}"
+    currId=$(decodeTargetId "$file")
+		targets="$targets ${currId}"
 	done
 	
 	# проверка, что цели из файла есть в директории gentargets
-	for shooted_target in $shooted_targets
+	for shootedTarget in $shootedTargets
 	do
-		if [[ $targets != *"$shooted_target"* ]]
+		if [[ $targets != *"$shootedTarget"* ]]
 		then
-			echo "`date` [SPRO] ID:$shooted_target X:$x Y:$y БР поражена" >> $log_spro
-      sendMessage "`date` [SPRO] ID:$shooted_target X:$x Y:$y БР поражена"
+			echo "`date` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена" >> $LOG_SPRO
+      sendMessage "`date` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена"
     else
-      echo "`date` [SPRO] ID:$shooted_target X:$x Y:$y Промах" >> $log_spro
-      sendMessage "`date` [SPRO] ID:$shooted_target X:$x Y:$y Промах"
+      echo "`date` [SPRO] ID:$shootedTarget X:$x Y:$y Промах" >> $LOG_SPRO
+      sendMessage "`date` [SPRO] ID:$shootedTarget X:$x Y:$y Промах"
 		fi
 	done
-	echo "" > $shooted_targets_file
+	echo "" > $SHOOTED_TARGETS_FILE
 
 	for file in $files
 	do
-    fileContent=$(cat "$targets_dir$file")
-    fileTime=$(stat -c '%Y' "$targets_dir$file")
+    fileContent=$(cat "$TARGETS_DIR$file")
+    fileTime=$(stat -c '%Y' "$TARGETS_DIR$file")
     coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
     x=${coords% *}
     y=${coords#* }
@@ -138,13 +138,13 @@ do
 		if [[ $targetInZone -eq 1 ]]
 		then
 			# проверка наличия в файле этой цели
-			str=$(tail -n 30 $detected_targets | grep $id | tail -n 1)
-			num=$(tail -n 30 $detected_targets | grep -c $id)
+			str=$(tail -n 30 $DETECTED_TARGETS_FILE | grep $id | tail -n 1)
+			num=$(tail -n 30 $DETECTED_TARGETS_FILE | grep -c $id)
 			if [[ $num == 0 ]]
 			then
-				echo "`date` [SPRO] ID:$id Обнаружена цель" >> $log_spro
+				echo "`date` [SPRO] ID:$id Обнаружена цель" >> $LOG_SPRO
         sendMessage "`date` [SPRO] ID:$id Обнаружена цель"
-				echo "$id $x $y $fileTime" >> $detected_targets
+				echo "$id $x $y $fileTime" >> $DETECTED_TARGETS_FILE
 			else
 				x1=$(echo "$str" | awk '{print $2}')
 				y1=$(echo "$str" | awk '{print $3}')
@@ -164,15 +164,15 @@ do
 					if [[ $ammo -gt 0 ]]
 					then
 						let ammo=ammo-1
-            echo $ammo > "$ammo_file"
-						echo "(SPRO) V:$v1 T:$timeDiff" > "$destroy_dir$id"
+            echo $ammo > "$AMMO_FILE"
+						echo "(SPRO) V:$v1 T:$timeDiff" > "$DESTROY_DIR$id"
             
-            echo "`date` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $log_spro
+            echo "`date` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $LOG_SPRO
             sendMessage "`date` [SPRO] ID:$id Выстрел (осталось $ammo)"
 						
-            echo "$id" >> $shooted_targets_file
+            echo "$id" >> $SHOOTED_TARGETS_FILE
 					else
-						echo "`date` [SPRO] Противоракеты закончились" >> $log_spro
+						echo "`date` [SPRO] Противоракеты закончились" >> $LOG_SPRO
             sendMessage "`date` [SPRO] Противоракеты закончились"
 					fi 
 				fi
