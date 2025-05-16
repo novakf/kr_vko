@@ -1,11 +1,11 @@
 #!/bin/bash
 
-temp_logs="temp/logs"
-temp_temp="temp/temp"
-rm -rf $temp_logs 2>/dev/null
-rm -rf $temp_temp 2>/dev/null
-mkdir $temp_logs
-mkdir $temp_temp
+shooted_targets="tmp/shooted_targets"
+detected_targets="tmp/detected_targets_targets"
+rm -rf $shooted_targets 2>/dev/null
+rm -rf $detected_targets 2>/dev/null
+mkdir $shooted_targets
+mkdir $detected_targets
 
 # запуск генератора целей
 ./GenTargets.sh &

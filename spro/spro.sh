@@ -1,19 +1,19 @@
 #!/bin/bash
 
 config_file="spro/config.yaml"
-file_log="temp/logs/spro_logs"
+detected_targets="tmp/detected_targets/spro"
 message_spro="messages/message_spro"
 log_spro="logs/spro"
 targets_dir="/tmp/GenTargets/Targets/"
 destroy_dir="/tmp/GenTargets/Destroy/"
-temp_file="temp/temp/spro"
+shooted_targets_file="tmp/shooted_targets/spro"
 ammo_file="spro/ammo"
 delim=":"
 ammo=10
-echo "" > $file_log
+echo "" > $detected_targets
 echo "" > $message_spro
 echo "" > $log_spro
-echo "" > $temp_file
+echo "" > $shooted_targets_file
 echo "$ammo" > $ammo_file
 
 
@@ -89,7 +89,7 @@ sendMessage() {
 while :
 do
 	# считывание из временного файла
-	temp_targets=`cat $temp_file`
+	shooted_targets=`cat $shooted_targets_file`
 	# считывание из директорияя gentargets
 	files=`ls $targets_dir -t 2>/dev/null | head -30`
 	targets=""
@@ -103,18 +103,18 @@ do
 	done
 	
 	# проверка, что цели из файла есть в директории gentargets
-	for temp_target in $temp_targets
+	for shooted_target in $shooted_targets
 	do
-		if [[ $targets != *"$temp_target"* ]]
+		if [[ $targets != *"$shooted_target"* ]]
 		then
-			echo "`date` [SPRO] ID:$temp_target X:$x Y:$y БР поражена" >> $log_spro
-      sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y БР поражена"
+			echo "`date` [SPRO] ID:$shooted_target X:$x Y:$y БР поражена" >> $log_spro
+      sendMessage "`date` [SPRO] ID:$shooted_target X:$x Y:$y БР поражена"
     else
-      echo "`date` [SPRO] ID:$temp_target X:$x Y:$y Промах" >> $log_spro
-      sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y Промах"
+      echo "`date` [SPRO] ID:$shooted_target X:$x Y:$y Промах" >> $log_spro
+      sendMessage "`date` [SPRO] ID:$shooted_target X:$x Y:$y Промах"
 		fi
 	done
-	echo "" > $temp_file
+	echo "" > $shooted_targets_file
 
 	for file in $files
 	do
@@ -138,13 +138,13 @@ do
 		if [[ $targetInZone -eq 1 ]]
 		then
 			# проверка наличия в файле этой цели
-			str=$(tail -n 30 $file_log | grep $id | tail -n 1)
-			num=$(tail -n 30 $file_log | grep -c $id)
+			str=$(tail -n 30 $detected_targets | grep $id | tail -n 1)
+			num=$(tail -n 30 $detected_targets | grep -c $id)
 			if [[ $num == 0 ]]
 			then
 				echo "`date` [SPRO] ID:$id Обнаружена цель" >> $log_spro
         sendMessage "`date` [SPRO] ID:$id Обнаружена цель"
-				echo "$id $x $y $fileTime" >> $file_log
+				echo "$id $x $y $fileTime" >> $detected_targets
 			else
 				x1=$(echo "$str" | awk '{print $2}')
 				y1=$(echo "$str" | awk '{print $3}')
@@ -170,7 +170,7 @@ do
             echo "`date` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $log_spro
             sendMessage "`date` [SPRO] ID:$id Выстрел (осталось $ammo)"
 						
-            echo "$id" >> $temp_file
+            echo "$id" >> $shooted_targets_file
 					else
 						echo "`date` [SPRO] Противоракеты закончились" >> $log_spro
             sendMessage "`date` [SPRO] Противоракеты закончились"

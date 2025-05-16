@@ -2,9 +2,9 @@
 
 config_file=$1
 zrdn_num=$2
-file_log=$3
+detected_targets=$3
 log_zrdn=$4
-temp_file=$5
+shooted_targets_file=$5
 message_zrdn=$6
 delim=":"
 ammo=20
@@ -67,7 +67,7 @@ function decodeTargetId() {
 while :
 do
 	# считывание из временного файла
-	temp_targets=`cat $temp_file`
+	shooted_targets=`cat $shooted_targets_file`
 	# считывание из директория gentargets
 	files=`ls $targets_dir -t 2>/dev/null | head -30`
 	targets=""
@@ -81,18 +81,18 @@ do
 	done
 
 	# проверка, что цели из файла есть в директории gentargets
-	for temp_target in $temp_targets
+	for shooted_target in $shooted_targets
 	do
-		id=$(echo $temp_target | awk -F ":" '{print $1}')
-		type=$(echo $temp_target | awk -F ":" '{print $2}')
+		id=$(echo $shooted_target | awk -F ":" '{print $1}')
+		type=$(echo $shooted_target | awk -F ":" '{print $2}')
 		if [[ $targets != *"$id"* ]]
 		then
 			if [[ $type  == "Самолет" ]]
 			then
 				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y: Самолет поражен" >> $log_zrdn
-          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y: Самолет поражен"
+					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y Самолет поражен" >> $log_zrdn
+          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y Самолет поражен"
 				fi
 			else
 				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
@@ -102,11 +102,11 @@ do
 				fi
 			fi
     else
-      echo "`date` [$zrdn_num] ID:$temp_target Промах" >> $log_zrdn
-      sendMessage "`date` [$zrdn_num] ID:$temp_target Промах"
+      echo "`date` [$zrdn_num] ID:$shooted_target Промах" >> $log_zrdn
+      sendMessage "`date` [$zrdn_num] ID:$shooted_target Промах"
 		fi
 	done
-	echo "" > $temp_file
+	echo "" > $shooted_targets_file
 	
 	for file in `ls $targets_dir -t 2>/dev/null | head -30`
 	do
@@ -130,12 +130,12 @@ do
 		if [[ $targetInZone -eq 1 ]]
 		then
 			# проверка наличия в файле этой цели
-			str=$(tail -n 30 $file_log | grep $id | tail -n 1)
-			num=$(tail -n 30 $file_log | grep -c $id)
+			str=$(tail -n 30 $detected_targets | grep $id | tail -n 1)
+			num=$(tail -n 30 $detected_targets | grep -c $id)
 			if [[ $num == 0 ]]
 			then
 				echo "`date` [$zrdn_num] ID:$id Обнаружена цель" >> $log_zrdn
-				echo "$id $x $y zrdn: $zrdn_num" >> $file_log
+				echo "$id $x $y zrdn: $zrdn_num" >> $detected_targets
         sendMessage "`date` [$zrdn_num] ID:$id Обнаружена цель"
 			else
 				x1=$(echo "$str" | awk '{print $2}')
@@ -156,7 +156,7 @@ do
 						let ammo=ammo-1
             echo $ammo > "$ammo_file"
 						echo "$zrdn_num" > "$destroy_dir$id"
-						echo "$id:К.ракета" >> $temp_file
+						echo "$id:К.ракета" >> $shooted_targets_file
 					else
 						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
             sendMessage "$zrdn_num: Противоракеты закончились"
@@ -169,7 +169,7 @@ do
 						let ammo=ammo-1
             echo $ammo > "$ammo_file"
 						echo "$zrdn_num" > "$destroy_dir$id"
-						echo "$id:Самолет" >> $temp_file
+						echo "$id:Самолет" >> $shooted_targets_file
 
             echo "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)" >> $log_zrdn
             sendMessage "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)"

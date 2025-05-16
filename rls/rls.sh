@@ -2,7 +2,7 @@
 
 config_file=$1
 rls_num=$2
-file_log=$3
+detected_targets_file=$3
 log_rls=$4
 message_rls=$5
 delim=":"
@@ -132,13 +132,13 @@ do
         if [[ $targetInZone -eq 1 ]]
         then
             # проверка наличия в файле этой цели
-            str=$(tail -n 30 $file_log | grep $id | tail -n 1)
-            num=$(tail -n 30 $file_log | grep -c $id)
+            str=$(tail -n 30 $detected_targets_file | grep $id | tail -n 1)
+            num=$(tail -n 30 $detected_targets_file | grep -c $id)
 
             if [[ $num == 0 ]]
             then
                 # echo "Обнаружена цель ID: $id" >> $log_rls
-                echo "$id $x $y rls: $rls_num" >> $file_log
+                echo "$id $x $y rls: $rls_num" >> $detected_targets_file
 
             else
                 x1=$(echo "$str" | awk '{print $2}')

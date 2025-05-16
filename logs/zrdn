@@ -1,54 +1,27 @@
 
-Fri May 16 04:51:40 AM MSK 2025 [ZRDN3] ID:6ea272r Обнаружена цель
-Fri May 16 04:51:40 AM MSK 2025 [ZRDN3] ID:e076cbb Обнаружена цель
-Fri May 16 04:51:40 AM MSK 2025 [ZRDN1] ID:fc6f4br Обнаружена цель
-Fri May 16 04:51:40 AM MSK 2025 [ZRDN3] ID:0455das Обнаружена цель
-Fri May 16 04:51:41 AM MSK 2025 [ZRDN3] ID:0455das Выстрел (осталось 18)
-Fri May 16 04:51:42 AM MSK 2025 [ZRDN1] ID:fc6f4br:К.ракета Промах
-Fri May 16 04:51:42 AM MSK 2025 [ZRDN3] ID:6ea272r X:2626334 Y:1465720 К.ракета поражена
-Fri May 16 04:51:42 AM MSK 2025 [ZRDN3] ID:0455das X:2626334 Y:1465720: Самолет поражен
-Fri May 16 04:51:44 AM MSK 2025 [ZRDN3] ID:639111b Обнаружена цель
-Fri May 16 04:51:59 AM MSK 2025 [ZRDN1] ID:f86c2db Обнаружена цель
-Fri May 16 04:52:14 AM MSK 2025 [ZRDN1] ID:4bd0a1b Обнаружена цель
-Fri May 16 04:52:28 AM MSK 2025 [ZRDN1] ID:4e8993b Обнаружена цель
-Fri May 16 04:53:16 AM MSK 2025 [ZRDN1] ID:1b976fs Обнаружена цель
-Fri May 16 04:53:17 AM MSK 2025 [ZRDN1] ID:1b976fs Выстрел (осталось 18)
-Fri May 16 04:53:18 AM MSK 2025 [ZRDN2] ID:1b976fs Выстрел (осталось 19)
-Fri May 16 04:53:18 AM MSK 2025 [ZRDN1] ID:1b976fs:Самолет Промах
-Fri May 16 04:53:19 AM MSK 2025 [ZRDN2] ID:1b976fs:Самолет Промах
-Fri May 16 04:53:20 AM MSK 2025 [ZRDN1] ID:1b976fs X:2801861 Y:2102380 К.ракета поражена
-Fri May 16 04:53:47 AM MSK 2025 [ZRDN3] ID:0df772b Обнаружена цель
-Fri May 16 04:53:52 AM MSK 2025 [ZRDN2] ID:bada05b Обнаружена цель
-Fri May 16 04:53:52 AM MSK 2025 [ZRDN2] ID:dd8c41b Обнаружена цель
-Fri May 16 04:54:28 AM MSK 2025 [ZRDN2] ID:7314f7b Обнаружена цель
-Fri May 16 04:54:31 AM MSK 2025 [ZRDN3] ID:990827r Обнаружена цель
-Fri May 16 04:54:34 AM MSK 2025 [ZRDN3] ID:990827r X:3562995 Y:2904255 К.ракета поражена
-Fri May 16 04:54:49 AM MSK 2025 [ZRDN2] ID:af48feb Обнаружена цель
-Fri May 16 04:54:52 AM MSK 2025 [ZRDN2] ID:88cdebb Обнаружена цель
-Fri May 16 04:54:53 AM MSK 2025 [ZRDN1] ID:5f8a09r Обнаружена цель
-Fri May 16 04:54:55 AM MSK 2025 [ZRDN1] ID:5f8a09r:К.ракета Промах
-Fri May 16 04:54:58 AM MSK 2025 [ZRDN2] ID:7f7786s Обнаружена цель
-Fri May 16 04:54:59 AM MSK 2025 [ZRDN2] ID:7f7786s Выстрел (осталось 17)
-Fri May 16 04:54:59 AM MSK 2025 [ZRDN3] ID:7f7786s Выстрел (осталось 16)
-Fri May 16 04:55:00 AM MSK 2025 [ZRDN1] ID:7f7786s Выстрел (осталось 14)
-Fri May 16 04:55:00 AM MSK 2025 [ZRDN2] ID:7f7786s:Самолет Промах
-Fri May 16 04:55:01 AM MSK 2025 [ZRDN3] ID:7f7786s:Самолет Промах
-Fri May 16 04:55:01 AM MSK 2025 [ZRDN1] ID:7f7786s:Самолет Промах
-Fri May 16 04:55:02 AM MSK 2025 [ZRDN2] ID:7f7786s X:3555106 Y:2685594 К.ракета поражена
-Fri May 16 04:55:23 AM MSK 2025 [ZRDN2] ID:f153der Обнаружена цель
-Fri May 16 04:55:25 AM MSK 2025 [ZRDN2] ID:f153der:К.ракета Промах
-Fri May 16 04:55:45 AM MSK 2025 [ZRDN1] ID:84001ab Обнаружена цель
-Fri May 16 04:55:55 AM MSK 2025 [ZRDN3] ID:6f35f3b Обнаружена цель
-Fri May 16 04:56:16 AM MSK 2025 [ZRDN1] ID:8b32d7s Обнаружена цель
-Fri May 16 04:56:17 AM MSK 2025 [ZRDN1] ID:8b32d7s Выстрел (осталось 12)
-Fri May 16 04:56:19 AM MSK 2025 [ZRDN1] ID:8b32d7s:Самолет Промах
-Fri May 16 04:56:20 AM MSK 2025 [ZRDN1] ID:8b32d7s X:3532811 Y:2067639 К.ракета поражена
-Fri May 16 04:56:23 AM MSK 2025 [ZRDN3] ID:9127bfr Обнаружена цель
-Fri May 16 04:56:25 AM MSK 2025 [ZRDN3] ID:9127bfr:К.ракета Промах
-Fri May 16 04:56:25 AM MSK 2025 [ZRDN2] ID:9127bfr:К.ракета Промах
-Fri May 16 04:56:26 AM MSK 2025 [ZRDN3] ID:9127bfr X:6843759 Y:1535928 К.ракета поражена
-Fri May 16 04:56:36 AM MSK 2025 [ZRDN1] ID:3b65bfb Обнаружена цель
-Fri May 16 04:56:38 AM MSK 2025 [ZRDN3] ID:6803d6r Обнаружена цель
-Fri May 16 04:56:41 AM MSK 2025 [ZRDN3] ID:6803d6r:К.ракета Промах
-Fri May 16 04:56:41 AM MSK 2025 [ZRDN2] ID:6803d6r:К.ракета Промах
-Fri May 16 04:57:11 AM MSK 2025 [ZRDN2] ID:31cc69b Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN2] ID:90bcd5s Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN3] ID:90bcd5s Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN2] ID:060044s Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN1] ID:516c44b Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN2] ID:1ab8c8s Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN1] ID:a7718ds Обнаружена цель
+Fri May 16 11:01:53 AM MSK 2025 [ZRDN3] ID:24a2e4b Обнаружена цель
+Fri May 16 11:01:55 AM MSK 2025 [ZRDN3] ID:90bcd5s Выстрел (осталось 19)
+Fri May 16 11:01:55 AM MSK 2025 [ZRDN2] ID:90bcd5s Выстрел (осталось 19)
+Fri May 16 11:01:55 AM MSK 2025 [ZRDN2] ID:060044s Выстрел (осталось 18)
+Fri May 16 11:01:55 AM MSK 2025 [ZRDN2] ID:1ab8c8s Выстрел (осталось 17)
+Fri May 16 11:01:55 AM MSK 2025 [ZRDN1] ID:a7718ds Выстрел (осталось 19)
+Fri May 16 11:01:56 AM MSK 2025 [ZRDN1] ID:a7718ds:Самолет Промах
+Fri May 16 11:01:56 AM MSK 2025 [ZRDN3] ID:90bcd5s X:3399890 Y:1379092: Самолет поражен
+Fri May 16 11:01:56 AM MSK 2025 [ZRDN2] ID:060044s X:3399890 Y:1379092: Самолет поражен
+Fri May 16 11:01:56 AM MSK 2025 [ZRDN2] ID:1ab8c8s X:3399890 Y:1379092: Самолет поражен
+Fri May 16 11:01:56 AM MSK 2025 [ZRDN1] ID:a7718ds Выстрел (осталось 18)
+Fri May 16 11:01:57 AM MSK 2025 [ZRDN1] ID:a7718ds:Самолет Промах
+Fri May 16 11:01:58 AM MSK 2025 [ZRDN1] ID:a7718ds:К.ракета Промах
+Fri May 16 11:01:59 AM MSK 2025 [ZRDN1] ID:a7718ds X:3377225 Y:1398730 К.ракета поражена
+Fri May 16 11:02:15 AM MSK 2025 [ZRDN1] ID:325fa0b Обнаружена цель
+Fri May 16 11:03:10 AM MSK 2025 [ZRDN3] ID:c797cds Обнаружена цель
+Fri May 16 11:03:11 AM MSK 2025 [ZRDN3] ID:c797cds Выстрел (осталось 18)
+Fri May 16 11:03:12 AM MSK 2025 [ZRDN3] ID:c797cds:Самолет Промах
+Fri May 16 11:03:12 AM MSK 2025 [ZRDN3] ID:c797cds Выстрел (осталось 17)
+Fri May 16 11:03:13 AM MSK 2025 [ZRDN3] ID:c797cds X:1728600 Y:3799880: Самолет поражен

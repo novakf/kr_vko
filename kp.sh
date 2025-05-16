@@ -8,17 +8,17 @@ rls_logs="logs/rls"
 spro_logs="logs/spro"
 zrdn_logs="logs/zrdn"
 
-temp_file1="temp/temp/zrdn1"
-temp_file2="temp/temp/zrdn2"
-temp_file3="temp/temp/zrdn3"
+shooted_targets_zrdn1="tmp/shooted_targets/zrdn1"
+shooted_targets_zrdn2="tmp/shooted_targets/zrdn2"
+shooted_targets_zrdn3="tmp/shooted_targets/zrdn3"
 
 file_to_run_zrdn="./zrdn/zrdn.sh"
 config_file_zrdn="zrdn/config.yaml"
 file_to_run_rls="./rls/rls.sh"
 config_file_rls="rls/config.yaml"
 
-file_log_zrdn="temp/logs/zrdn_logs"
-file_log_rls="temp/logs/rls_logs"
+detected_targets_zrdn="tmp/detected_targes/zrdn_logs"
+detected_targets_rls="tmp/detected_targes/rls_logs"
 
 spro_ammo_file="spro/ammo"
 zrdn1_ammo_file="zrdn/ammo_ZRDN1"
@@ -201,33 +201,33 @@ autoFailover() {
     if [[ $ps_zrdn1 == $bad_num_proc ]]
     then
       echo "`date` [ZRDN1] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN1" $file_log_zrdn $zrdn_logs $temp_file1 $zrdn_messages &
+      $file_to_run_zrdn $config_file_zrdn "ZRDN1" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn1 $zrdn_messages &
     fi
     if [[ $ps_zrdn2 == $bad_num_proc ]]
     then
       echo "`date` [ZRDN2] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN2" $file_log_zrdn $zrdn_logs $temp_file2 $zrdn_messages &
+      $file_to_run_zrdn $config_file_zrdn "ZRDN2" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn2 $zrdn_messages &
     fi
     if [[ $ps_zrdn3 == $bad_num_proc ]]
     then
       echo "`date` [ZRDN3] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_zrdn $config_file_zrdn "ZRDN3" $file_log_zrdn $zrdn_logs $temp_file3 $zrdn_messages &
+      $file_to_run_zrdn $config_file_zrdn "ZRDN3" $detected_targets_zrdn $zrdn_logs $shooted_targets_zrdn3 $zrdn_messages &
     fi
 
     if [[ $ps_rls1 == $bad_num_proc ]]
     then
       echo "`date` [RLS1] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_rls $config_file_rls 'RLS1' $file_log_rls $rls_logs $rls_messages &
+      $file_to_run_rls $config_file_rls 'RLS1' $detected_targets_rls $rls_logs $rls_messages &
     fi
     if [[ $ps_rls2 == $bad_num_proc ]]
     then
       echo "`date` [RLS2] Работоспособность восстановлена" >> $kp_logs
-      $file_to_run_rls $config_file_rls 'RLS2' $file_log_rls $rls_logs $rls_messages &
+      $file_to_run_rls $config_file_rls 'RLS2' $detected_targets_rls $rls_logs $rls_messages &
     fi
     if [[ $ps_rls3 == $bad_num_proc ]]
     then
       echo "`date` [RLS3] Работоспособность восстановлена" >> $rls_logs
-      $file_to_run_rls $config_file_rls 'RLS3' $file_log_rls $rls_logs $rls_messages &
+      $file_to_run_rls $config_file_rls 'RLS3' $detected_targets_rls $rls_logs $rls_messages &
     fi
   done
 }
