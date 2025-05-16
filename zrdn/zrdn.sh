@@ -34,7 +34,7 @@ sendMessage() {
 	# Шифрование base64
 	local encrypted_content=$(echo -n "$content" | base64 -w 0)
 
-	echo "$checksum $encrypted_content" >> "$file_path"
+	echo "$checksum $encrypted_content" >> "messages/message_zrdn"
 }
 
 function inZrdnZone()
@@ -97,13 +97,16 @@ do
 			else
 				if [[ `cat $log_zrdn | grep $id | grep -c 'поражен'` == 0 ]]
 				then
-					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y: К.ракета поражена" >> $log_zrdn
-          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y: К.ракета поражена"
+					echo "`date` [$zrdn_num] ID:$id X:$x Y:$y К.ракета поражена" >> $log_zrdn
+          sendMessage "`date` [$zrdn_num] ID:$id X:$x Y:$y К.ракета поражена"
 				fi
 			fi
+    else
+      echo "`date` [$zrdn_num] ID:$temp_target Промах" >> $log_zrdn
+      sendMessage "`date` [$zrdn_num] ID:$temp_target Промах"
 		fi
 	done
-	echo "" > $temp_file
+	#echo "" > $temp_file
 	
 	for file in `ls $targets_dir -t 2>/dev/null | head -30`
 	do
@@ -167,6 +170,10 @@ do
             echo $ammo > "$ammo_file"
 						echo "$zrdn_num" > "$destroy_dir$id"
 						echo "$id:Самолет" >> $temp_file
+
+            echo "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)" >> $log_zrdn
+            sendMessage "`date` [$zrdn_num] ID:$id Выстрел (осталось $ammo)"
+
 					else
 						echo "$zrdn_num: Противоракеты закончились" >> $log_zrdn
             sendMessage "$zrdn_num: Противоракеты закончились"
@@ -175,5 +182,13 @@ do
 			fi
 		fi
 	done
-  sleep 0.5
+  #sleep 1
 done
+
+# завершение дочерних процессов
+parent_pid=$$
+cleanup() {
+  pkill -P $parent_pid
+}
+trap cleanup EXIT
+wait

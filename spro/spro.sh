@@ -107,11 +107,14 @@ do
 	do
 		if [[ $targets != *"$temp_target"* ]]
 		then
-			echo "`date` [SPRO] ID:$temp_target X:$x Y:$y : БР поражена" >> $log_spro
-      sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y : БР поражена"
+			echo "`date` [SPRO] ID:$temp_target X:$x Y:$y БР поражена" >> $log_spro
+      sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y БР поражена"
+    else
+      echo "`date` [SPRO] ID:$temp_target X:$x Y:$y Промах" >> $log_spro
+      sendMessage "`date` [SPRO] ID:$temp_target X:$x Y:$y Промах"
 		fi
 	done
-	echo "" > $temp_file
+	#echo "" > $temp_file
 
 	for file in $files
 	do
@@ -162,8 +165,12 @@ do
 					then
 						let ammo=ammo-1
             echo $ammo > "$ammo_file"
-						echo "SPRO V:$v1 T:$timeDiff" > "$destroy_dir$id"
-						echo "$id" >> $temp_file
+						echo "(SPRO) V:$v1 T:$timeDiff" > "$destroy_dir$id"
+            
+            echo "`date` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $log_spro
+            sendMessage "`date` [SPRO] ID:$id Выстрел (осталось $ammo)"
+						
+            echo "$id" >> $temp_file
 					else
 						echo "`date` [SPRO] Противоракеты закончились" >> $log_spro
             sendMessage "`date` [SPRO] Противоракеты закончились"

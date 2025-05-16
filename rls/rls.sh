@@ -172,6 +172,7 @@ do
                         if [ -z "$check" ]
                         then
                             echo "`date` [$rls_num] ID:$id X:$x Y:$y Обнаружена БР (V=$v)" >> $log_rls
+                            sendMessage "`date` [$rls_num] ID:$id X:$x Y:$y Обнаружена БР (V=$v)"
                         fi
                     fi
                 fi
@@ -179,5 +180,5 @@ do
         fi
     done
 
-    sleep 0.5
+    #sleep 0.5
 done
