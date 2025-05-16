@@ -12,10 +12,10 @@ mkdir $DETECTED_TARGETS_DIR
 sleep 0.5
 
 # # запуск рлс
-./rls/run_rls.sh $>/dev/null&
+./rls/start_rls.sh $>/dev/null&
 
 # запуск зрдн
-./zrdn/run_zrdn.sh  $>/dev/null &
+./zrdn/start_zrdn.sh  $>/dev/null &
 
 # запуск  спро
 ./spro/spro.sh $>/dev/null &
