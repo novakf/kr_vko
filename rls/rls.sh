@@ -35,58 +35,23 @@ sendMessage() {
 	echo "$checksum $encryptedContent" >> "$MESSAGE_RLS"
 }
 
-arctangens() {
-    local target_x="$1"
-    local target_y="$2"
-    local rls_x="$3"
-    local rls_y="$4"
-
-    angle=0
-    if [[ $(echo "$target_x == $rls_x" | bc) == 1 ]]; then
-        if [[ $(echo "$target_y >= $rls_y" | bc) == 1 ]]; then
-            angle=90
-        else
-            angle=270
-        fi
-    else
-        #angle=$(echo "scale=4; a(($target_y - $rls_y)/($target_x - $rls_x))*180/3.1415927" | bc -l)
-        #angle=$(echo "scale=4; if($angle < 0) $angle+360 else $angle" | bc -l)
-        angle=0
-    fi
-
-    echo "$angle"
-}
-
-distance() {
-	./utils/distance "$1" "$2" "$3" "$4"
-}
-
-# Функция вычисления попадания между лучами (используем bc)
-beam() {
-	./utils/beam "$1" "$2" "$RLS_X" "$RLS_Y" "$RLS_ALPHA" "$RLS_ANGLE"
-}
-
-check_trajectory_intersection() {
-	./utils/check_trajectory_intersection "$1" "$2" "$3" "$4" "6200000" "3750000" "1000000"
-}
-
 function inRlsZone()
 {
-    local target_x="$1"
-    local target_y="$2"
-    local rls_x="$3"
-    local rls_y="$4"
-    local rls_azimuth="$5"
-    local rls_view_angle="$6"
-    local rls_radius="$7"
+    local targetX="$1"
+    local targetY="$2"
+    local rlsX="$3"
+    local rlsY="$4"
+    local rlsAz="$5"
+    local rlsAngle="$6"
+    local rlsRadius="$7"
 
-    dist_to_target=$(./utils/distance "$rls_x" "$rls_y" "$target_x" "$target_y")
-    if (($(echo "$dist_to_target > $rls_radius" | bc -l))); then 
+    distanceToTarget=$(./utils/calculateDistance "$rlsX" "$rlsY" "$targetX" "$targetY")
+    if (($(echo "$distanceToTarget > $rlsRadius" | bc -l))); then 
       return 0
     fi    
 
-    target_in_angle=$(./utils/beam "$target_x" "$target_y" "$rls_x" "$rls_y" "$rls_azimuth" "$rls_view_angle")
-		if [[ "$target_in_angle" -eq 0 ]]; then
+    isTargetInAngle=$(./utils/isInRlsDirection "$targetX" "$targetY" "$rlsX" "$rlsY" "$rlsAz" "$rlsAngle")
+		if [[ "$isTargetInAngle" -eq 0 ]]; then
       return 0
     fi
 
@@ -103,23 +68,6 @@ function calculatedSpeed()
         return 1
     fi
     return 0
-}
-
-function sproDirection()
-{
-    local target_x_1="$1"
-    local target_y_1="$2"
-    local target_x_2="$3"
-    local target_y_2="$4"
-    local spro_x="$5"
-    local spro_y="$6"
-    local spro_radius="$7"
-
-    if [[ $(./utils/check_trajectory_intersection "$target_x_1" "$target_y_1" "$target_x_2" "$target_y_2" "$spro_x" "$spro_y" "$spro_radius") -eq 0 ]]; then
-      return 0
-    fi
-
-    return 1
 }
 
 function decodeTargetId() {
@@ -150,10 +98,10 @@ do
 		    fi
 
         input=$(stat "$TARGETS_DIR$file" | grep Birth)
-        date_part=$(echo "$input" | awk '{print $2 " " $3}' | cut -d. -f1)
+        datePart=$(echo "$input" | awk '{print $2 " " $3}' | cut -d. -f1)
         millis=$(echo "$input" | awk '{print $3}' | cut -d. -f2 | cut -c1-3)
-        unix_time=$(date -d "$date_part" +%s)
-        fileTime=$unix_time$millis
+        unixTime=$(date -d "$datePart" +%s)
+        fileTime=$unixTime$millis
 
         
         # проверка наличия цели в области видимости рлс
@@ -196,7 +144,7 @@ do
                     let dy=$y0-$y1
 
                     # проверка, что цель летит в сторону спро
-                    sproDirection "$x1" "$y1" "$x" "$y" "6200000" "3750000" "1000000"
+                    ./utils/isTrajectoryIntersectingCircle "$x1" "$y1" "$x" "$y" "$SPRO_X" "$SPRO_Y" "$SPRO_R"
                     sproDirectionResult=$?
                     if [[ $sproDirectionResult -eq 1 ]]
                     then

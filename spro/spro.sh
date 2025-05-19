@@ -20,7 +20,7 @@ echo "$ammo" > $AMMO_FILE
 if [ -f "$CONFIG_FILE" ]; then
 	x0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'x0:' | awk '{print $2}')
 	y0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'y0:' | awk '{print $2}')
-	spro_r=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
+	sproR=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
 
 else
 	echo "Файл $CONFIG_FILE не найден."
@@ -32,8 +32,8 @@ function inSproZone()
 	local x=$1
 	local y=$2
 
-  dist_to_target=$(./utils/distance "$x0" "$y0" "$x" "$y")
-	if (($(echo "$dist_to_target <= $spro_r" | bc -l))); then
+  distanceToTarget=$(./utils/calculateDistance "$x0" "$y0" "$x" "$y")
+	if (($(echo "$distanceToTarget <= $sproR" | bc -l))); then
     return 1
   fi
 
@@ -118,10 +118,10 @@ do
     fileContent=$(cat "$TARGETS_DIR$file")
 
     input=$(stat "$TARGETS_DIR$file" | grep Birth)
-    date_part=$(echo "$input" | awk '{print $2 " " $3}' | cut -d. -f1)
+    datePart=$(echo "$input" | awk '{print $2 " " $3}' | cut -d. -f1)
     millis=$(echo "$input" | awk '{print $3}' | cut -d. -f2 | cut -c1-3)
-    unix_time=$(date -d "$date_part" +%s)
-    fileTime=$unix_time$millis
+    unixTime=$(date -d "$datePart" +%s)
+    fileTime=$unixTime$millis
 
     coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
     x=${coords% *}
@@ -167,7 +167,7 @@ do
 					then
 						let ammo=ammo-1
             echo $ammo > "$AMMO_FILE"
-						echo "(SPRO) V:$v1 T:$timeDiff" > "$DESTROY_DIR$id"
+						echo "(SPRO) V:$v1" > "$DESTROY_DIR$id"
             
             echo "`date +"%T.%3N"` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $LOG_SPRO
             sendMessage "`date +"%T.%3N"` [SPRO] ID:$id Выстрел (осталось $ammo)"

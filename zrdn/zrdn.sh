@@ -40,7 +40,7 @@ function inZrdnZone()
 	local x=$1
 	local y=$2
 
-  dist_to_target=$(./utils/distance "$x0" "$y0" "$x" "$y")
+  dist_to_target=$(./utils/calculateDistance "$x0" "$y0" "$x" "$y")
 	if (($(echo "$dist_to_target <= $zrdn_r" | bc -l))); then
     return 1
   fi
@@ -150,7 +150,7 @@ do
 					then
 						let ammo=ammo-1
             echo $ammo > "$AMMO_FILE"
-						echo "$ZRDN_NUM" > "$DESTROY_DIR$id"
+						echo "($ZRDN_NUM)" > "$DESTROY_DIR$id"
 						echo "$id:К.ракета" >> $SHOOTED_TARGETS_FILE
 
             echo "`date +"%T.%3N"` [$ZRDN_NUM] ID:$id Выстрел (осталось $ammo)" >> $LOG_ZRDN
@@ -166,7 +166,7 @@ do
 					then
 						let ammo=ammo-1
             echo $ammo > "$AMMO_FILE"
-						echo "$ZRDN_NUM" > "$DESTROY_DIR$id"
+						echo "($ZRDN_NUM)" > "$DESTROY_DIR$id"
 						echo "$id:Самолет" >> $SHOOTED_TARGETS_FILE
 
             echo "`date +"%T.%3N"` [$ZRDN_NUM] ID:$id Выстрел (осталось $ammo)" >> $LOG_ZRDN
