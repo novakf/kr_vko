@@ -20,7 +20,7 @@ echo "$ammo" > $AMMO_FILE
 if [ -f "$CONFIG_FILE" ]; then
 	x0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'x0:' | awk '{print $2}')
 	y0=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'y0:' | awk '{print $2}')
-	r=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
+	spro_r=$(grep -E "SPRO$DELIM" "$CONFIG_FILE" -A 5 | grep 'r:' | awk '{print $2}')
 
 else
 	echo "Файл $CONFIG_FILE не найден."
@@ -29,18 +29,15 @@ fi
 
 function inSproZone()
 {
-	local dx=$1
-	local dy=$2
-	local R=$3
+	local x=$1
+	local y=$2
 
-	local r=$(echo "sqrt ( (($dx*$dx+$dy*$dy)) )" | bc -l)
-	r=${r/\.*}
+  dist_to_target=$(./utils/distance "$x0" "$y0" "$x" "$y")
+	if (($(echo "$dist_to_target <= $spro_r" | bc -l))); then
+    return 1
+  fi
 
-	if (( $r <= $R ))
-	then
-		return 1
-	fi
-	return 0
+  return 0
 }
 
 function calculatedSpeed()
@@ -51,9 +48,9 @@ function calculatedSpeed()
 
 	local s=$(echo "scale=0; sqrt($vx * $vx + $vy * $vy)" | bc -l)
 
-  if [ $time -gt 2 ]
+  if [ $time -gt 2000 ]
   then
-      local v=$(echo "$s/$time" | bc -l)
+      local v=$(echo "$s/($time/1000)" | bc -l)
   else
       local v=$(echo "$s" | bc -l)
   fi
@@ -107,11 +104,11 @@ do
 	do
 		if [[ $targets != *"$shootedTarget"* ]]
 		then
-			echo "`date` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена" >> $LOG_SPRO
-      sendMessage "`date` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена"
+			echo "`date +"%T.%3N"` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена" >> $LOG_SPRO
+      sendMessage "`date +"%T.%3N"` [SPRO] ID:$shootedTarget X:$x Y:$y БР поражена"
     else
-      echo "`date` [SPRO] ID:$shootedTarget X:$x Y:$y Промах" >> $LOG_SPRO
-      sendMessage "`date` [SPRO] ID:$shootedTarget X:$x Y:$y Промах"
+      echo "`date +"%T.%3N"` [SPRO] ID:$shootedTarget X:$x Y:$y Промах" >> $LOG_SPRO
+      sendMessage "`date +"%T.%3N"` [SPRO] ID:$shootedTarget X:$x Y:$y Промах"
 		fi
 	done
 	echo "" > $SHOOTED_TARGETS_FILE
@@ -119,7 +116,13 @@ do
 	for file in $files
 	do
     fileContent=$(cat "$TARGETS_DIR$file")
-    fileTime=$(stat -c '%Y' "$TARGETS_DIR$file")
+
+    input=$(stat "$TARGETS_DIR$file" | grep Birth)
+    date_part=$(echo "$input" | awk '{print $2 " " $3}' | cut -d. -f1)
+    millis=$(echo "$input" | awk '{print $3}' | cut -d. -f2 | cut -c1-3)
+    unix_time=$(date -d "$date_part" +%s)
+    fileTime=$unix_time$millis
+
     coords=$(echo ${fileContent//[X:|Y:]/""} | tr -s ' \t' ' ')
     x=${coords% *}
     y=${coords#* }
@@ -132,18 +135,17 @@ do
 		fi
 
 		# проверка наличия цели в области спро
-		targetInZone=0
-		inSproZone $dx $dy $r
+		inSproZone $x $y
 		targetInZone=$?
 		if [[ $targetInZone -eq 1 ]]
 		then
 			# проверка наличия в файле этой цели
-			str=$(tail -n 30 $DETECTED_TARGETS_FILE | grep $id | tail -n 1)
-			num=$(tail -n 30 $DETECTED_TARGETS_FILE | grep -c $id)
-			if [[ $num == 0 ]]
+			str=$(grep $id $DETECTED_TARGETS_FILE)
+
+			if [ -z "$str" ]
 			then
-				echo "`date` [SPRO] ID:$id Обнаружена цель" >> $LOG_SPRO
-        sendMessage "`date` [SPRO] ID:$id Обнаружена цель"
+				echo "`date +"%T.%3N"` [SPRO] ID:$id Обнаружена цель" >> $LOG_SPRO
+        sendMessage "`date +"%T.%3N"` [SPRO] ID:$id Обнаружена цель"
 				echo "$id $x $y $fileTime" >> $DETECTED_TARGETS_FILE
 			else
 				x1=$(echo "$str" | awk '{print $2}')
@@ -167,18 +169,17 @@ do
             echo $ammo > "$AMMO_FILE"
 						echo "(SPRO) V:$v1 T:$timeDiff" > "$DESTROY_DIR$id"
             
-            echo "`date` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $LOG_SPRO
-            sendMessage "`date` [SPRO] ID:$id Выстрел (осталось $ammo)"
+            echo "`date +"%T.%3N"` [SPRO] ID:$id Выстрел (осталось $ammo)" >> $LOG_SPRO
+            sendMessage "`date +"%T.%3N"` [SPRO] ID:$id Выстрел (осталось $ammo)"
 						
             echo "$id" >> $SHOOTED_TARGETS_FILE
 					else
-						echo "`date` [SPRO] Противоракеты закончились" >> $LOG_SPRO
-            sendMessage "`date` [SPRO] Противоракеты закончились"
+						echo "`date +"%T.%3N"` [SPRO] Противоракеты закончились" >> $LOG_SPRO
+            sendMessage "`date +"%T.%3N"` [SPRO] Противоракеты закончились"
 					fi 
 				fi
 			fi
 		fi
 	done
-
   sleep 1
 done

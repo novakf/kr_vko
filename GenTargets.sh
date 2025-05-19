@@ -3,11 +3,11 @@
 (( BASH_VERSINFO[0] < 4 )) && exit 1
 
 declare -A TId
-MaxKolTargets=30     # Максимальное количество целей
+MaxKolTargets=50      # Максимальное количество целей
 Probability=70        # Вероятность поражения %
 
-RangeX=8000000       # Метры
-RangeY=5000000        # Метры
+RangeX=10000000       # Метры
+RangeY=9000000        # Метры
 XYminusInt=10
 
 types="bsr"           # типы целей
